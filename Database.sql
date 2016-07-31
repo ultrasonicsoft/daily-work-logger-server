@@ -1,3 +1,5 @@
+CREATE DATABASE  IF NOT EXISTS `daily-work-logger-db` /*!40100 DEFAULT CHARACTER SET latin1 */;
+USE `daily-work-logger-db`;
 -- MySQL dump 10.13  Distrib 5.7.9, for Win64 (x86_64)
 --
 -- Host: 127.0.0.1    Database: daily-work-logger-db
@@ -80,4 +82,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2016-07-30 12:10:13
+-- Dump completed on 2016-07-31  9:34:56
