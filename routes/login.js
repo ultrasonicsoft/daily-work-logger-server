@@ -24,11 +24,12 @@ router.post('/', function (req, res) {
 
     console.log('running query select...');
     var query = 'SELECT * FROM `daily-work-logger-db`.users WHERE UserName = \'' + userName + '\' AND Password=\'' + password + '\';'
+    console.log("query: " + query);
     connection.query(query, function (err, rows) {
         var foundUser = rows[0];
         console.log('result: ', rows);
         if (foundUser) {
-            res.send({ isAuthenticatedUser: true, loggedInUser:foundUser });
+            res.send({ isAuthenticatedUser: true, loggedInUser: foundUser });
         }
         else {
             res.send({ isAuthenticatedUser: false });

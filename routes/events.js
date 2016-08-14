@@ -26,8 +26,8 @@ router.post('/createNewEvent', function (req, res) {
     var endDate = moment(newEvent.endDate, 'YYYY/MM/DD HH:mm:ss').format('YYYY-MM-DD HH:mm:ss');
     console.log('formatted date: ' + endDate);
 
-    var query = util.format('CALL `daily-work-logger-db`.`add_new_event`(\'%s\',\'%s\',\'%s\',\'%s\');',newEvent.id,
-        startDate, endDate, newEvent.description ); 
+    var query = util.format('CALL `daily-work-logger-db`.`add_new_event`(\'%s\',\'%s\',\'%s\',\'%s\',%d);',newEvent.id,
+        startDate, endDate, newEvent.description, newEvent.userId); 
     console.log("query: ", query);
 
     connection.query(query, function (err, rows) {

@@ -1,12 +1,25 @@
 var express = require('express');
 var router = express.Router();
+var mysql = require('mysql');
+
+var connection = mysql.createConnection({
+    host: '127.0.0.1',
+    user: 'root',
+    password: 'root'
+});
 
 /*
  * GET userlist.
  */
-router.get('/userlist', function(req, res) {
-    var users  = [{id:1, name:'simon'}, {id:2,name:'balram'}];
-    res.send(users);
+router.get('/all', function (req, res) {
+    // var users  = [{id:1, name:'simon'}, {id:2,name:'balram'}];
+    // res.send(users);
+    var query = "SELECT Id, UserName,RoleId FROM `daily-work-logger-db`.users;"
+    connection.query(query, function (err, rows) {
+        console.log('result: ', rows);
+        res.send(rows);
+        if (err) throw err;
+    });
 });
 
 // /*
