@@ -27,11 +27,12 @@ DROP TABLE IF EXISTS `events`;
 CREATE TABLE `events` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `event_id` varchar(100) NOT NULL,
+  `user_id` int(11) NOT NULL,
   `start_date` datetime DEFAULT NULL,
   `end_date` datetime DEFAULT NULL,
   `description` varchar(200) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -40,8 +41,36 @@ CREATE TABLE `events` (
 
 LOCK TABLES `events` WRITE;
 /*!40000 ALTER TABLE `events` DISABLE KEYS */;
-INSERT INTO `events` VALUES (1,'1470551246566','2016-08-04 04:50:00','2016-08-04 04:55:00','jai ganesh'),(2,'1470552708595','2016-08-02 19:50:00','2016-08-02 19:55:00','test2');
+INSERT INTO `events` VALUES (1,'1470551246566',1,'2016-08-04 04:50:00','2016-08-04 04:55:00','jai ganesh'),(2,'1470552708595',1,'2016-08-02 19:50:00','2016-08-02 19:55:00','test2'),(3,'1470577430972',1,'2016-08-02 19:05:00','2016-08-02 19:10:00','test event 1'),(4,'1470716534523',1,'2016-08-09 20:00:00','2016-08-09 20:05:00','New event');
 /*!40000 ALTER TABLE `events` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `messages`
+--
+
+DROP TABLE IF EXISTS `messages`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `messages` (
+  `Id` int(11) NOT NULL AUTO_INCREMENT,
+  `messageText` varchar(800) NOT NULL,
+  `sentOn` datetime DEFAULT NULL,
+  `fromUserId` int(11) DEFAULT NULL,
+  `toUserId` int(11) DEFAULT NULL,
+  `status` int(11) DEFAULT NULL,
+  PRIMARY KEY (`Id`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `messages`
+--
+
+LOCK TABLES `messages` WRITE;
+/*!40000 ALTER TABLE `messages` DISABLE KEYS */;
+INSERT INTO `messages` VALUES (1,'test1','2016-08-14 12:50:38',2,1,2);
+/*!40000 ALTER TABLE `messages` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -109,18 +138,51 @@ UNLOCK TABLES;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-CREATE DEFINER=`root`@`localhost` PROCEDURE `add_new_event`(event_id varchar(100), start_date datetime, end_date datetime, description varchar(200))
+CREATE DEFINER=`root`@`localhost` PROCEDURE `add_new_event`(event_id varchar(100),
+	start_date datetime, end_date datetime, description varchar(200), user_id int)
 BEGIN
 	INSERT INTO `daily-work-logger-db`.`events`
 		(`event_id`,
 		`start_date`,
 		`end_date`,
-		`description`)
+		`description`,
+        `user_id`)
 		VALUES
 		(event_id,
         start_date,
         end_date,
-        description);
+        description,
+        user_id);
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `createNewMessage` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8 */ ;
+/*!50003 SET character_set_results = utf8 */ ;
+/*!50003 SET collation_connection  = utf8_general_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `createNewMessage`(_messageText VARCHAR(800), _sentOn DATETIME, _fromUserId int,_toUserId int,_status int)
+BEGIN
+	INSERT INTO `daily-work-logger-db`.`messages`
+		(		`messageText`,
+		`sentOn`,
+		`fromUserId`,
+		`toUserId`,
+		`status`)
+		VALUES
+		(_messageText,
+		_sentOn,
+		_fromUserId,
+		_toUserId,
+		_status);
 END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -137,4 +199,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2016-08-07 12:23:58
+-- Dump completed on 2016-08-14 18:22:07

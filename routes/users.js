@@ -22,18 +22,14 @@ router.get('/all', function (req, res) {
     });
 });
 
-// /*
-//  * POST to adduser.
-//  */
-// router.post('/adduser', function(req, res) {
-//     var db = req.db;
-//     var collection = db.get('userlist');
-//     collection.insert(req.body, function(err, result){
-//         res.send(
-//             (err === null) ? { msg: '' } : { msg: err }
-//         );
-//     });
-// });
+/*
+ * POST to adduser.
+ */
+router.post('/newMessage', function(req, res) {
+    var newMessage = req.body;
+    console.log(newMessage);
+    res.send(200);
+});
 
 // /*
 //  * DELETE to deleteuser.
