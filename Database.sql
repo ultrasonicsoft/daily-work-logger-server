@@ -60,7 +60,7 @@ CREATE TABLE `messages` (
   `toUserId` int(11) DEFAULT NULL,
   `status` int(11) DEFAULT NULL,
   PRIMARY KEY (`Id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -69,7 +69,7 @@ CREATE TABLE `messages` (
 
 LOCK TABLES `messages` WRITE;
 /*!40000 ALTER TABLE `messages` DISABLE KEYS */;
-INSERT INTO `messages` VALUES (1,'test1','2016-08-14 12:50:38',2,1,2);
+INSERT INTO `messages` VALUES (1,'test1','2016-08-14 12:50:38',2,1,2),(2,'test2','2016-08-14 12:58:55',2,3,2);
 /*!40000 ALTER TABLE `messages` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -189,6 +189,30 @@ DELIMITER ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
 /*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `getAllReceivedMessages` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8 */ ;
+/*!50003 SET character_set_results = utf8 */ ;
+/*!50003 SET collation_connection  = utf8_general_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `getAllReceivedMessages`(userId int)
+BEGIN
+	SELECT m.Id, m.messageText, uu.UserName 'From', m.sentOn FROM `daily-work-logger-db`.messages m
+	left outer join `daily-work-logger-db`.users u
+	on m.toUserId = u.Id
+	left outer join `daily-work-logger-db`.users uu
+	on m.fromUserId = uu.Id
+	where u.Id = userId;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
@@ -199,4 +223,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2016-08-14 18:22:07
+-- Dump completed on 2016-08-14 18:46:58

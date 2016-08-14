@@ -13,16 +13,16 @@ var connection = mysql.createConnection({
 /*
  * GET userlist.
  */
-// router.get('/all', function (req, res) {
-//     // var users  = [{id:1, name:'simon'}, {id:2,name:'balram'}];
-//     // res.send(users);
-//     var query = "SELECT Id, UserName,RoleId FROM `daily-work-logger-db`.users;"
-//     connection.query(query, function (err, rows) {
-//         console.log('result: ', rows);
-//         res.send(rows);
-//         if (err) throw err;
-//     });
-// });
+router.get('/all', function (req, res) {
+    // var users  = [{id:1, name:'simon'}, {id:2,name:'balram'}];
+    // res.send(users);
+    var query = "CALL `daily-work-logger-db`.`getAllReceivedMessages`(1);"
+    connection.query(query, function (err, rows) {
+        console.log('result: ', rows[0]);
+        res.send(rows[0]);
+        if (err) throw err;
+    });
+});
 
 /*
  * POST to adduser.
@@ -35,7 +35,7 @@ router.post('/newMessage', function (req, res) {
 
     var query = util.format('CALL `daily-work-logger-db`.`createNewMessage`(\'%s\',\'%s\',%d,%d,%d);', newMessage.messageText,
         sentOn, newMessage.fromUserId, newMessage.toUserId, newMessage.status);
-        
+
     console.log("query: ", query);
 
     connection.query(query, function (err, rows) {
