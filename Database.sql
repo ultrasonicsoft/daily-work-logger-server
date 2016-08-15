@@ -54,13 +54,14 @@ DROP TABLE IF EXISTS `messages`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `messages` (
   `Id` int(11) NOT NULL AUTO_INCREMENT,
+  `subject` varchar(50) DEFAULT NULL,
   `messageText` varchar(800) NOT NULL,
   `sentOn` datetime DEFAULT NULL,
   `fromUserId` int(11) DEFAULT NULL,
   `toUserId` int(11) DEFAULT NULL,
   `isRead` tinyint(4) DEFAULT NULL,
   PRIMARY KEY (`Id`)
-) ENGINE=InnoDB AUTO_INCREMENT=76 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=82 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -69,7 +70,7 @@ CREATE TABLE `messages` (
 
 LOCK TABLES `messages` WRITE;
 /*!40000 ALTER TABLE `messages` DISABLE KEYS */;
-INSERT INTO `messages` VALUES (51,'1 - Hi Simon,\n\nHow are you?\n\nBest regards,\nBalram','2016-08-15 06:01:41',2,1,0),(52,'2 - Hi Simon,\n\nHow are you?\n\nBest regards,\nBalram','2016-08-15 06:01:47',2,1,0),(53,'1 - Hi Balram,\r \r I am good\r \r Regards,\r Simon','2016-08-15 06:06:29',1,2,1),(54,'2- Hi Balram\n\nFrom,\nSimon','2016-08-15 06:16:31',1,2,1),(55,'3- Hi Balram\n\nFrom,\nSimon','2016-08-15 06:16:35',1,2,1),(56,'4- Hi Balram\n\nFrom,\nSimon','2016-08-15 06:16:39',1,2,1),(57,'5- Hi Balram\n\nFrom,\nSimon','2016-08-15 06:16:42',1,2,1),(58,'6- Hi Balram\n\nFrom,\nSimon','2016-08-15 06:16:45',1,2,1),(59,'7- Hi Balram\n\nFrom,\nSimon','2016-08-15 06:16:48',1,2,1),(60,'8- Hi Balram\n\nFrom,\nSimon','2016-08-15 06:16:50',1,2,1),(61,'9- Hi Balram\n\nFrom,\nSimon','2016-08-15 06:16:54',1,2,1),(62,'10- Hi Balram\n\nFrom,\nSimon','2016-08-15 06:16:57',1,2,1),(63,'11- Hi Balram\n\nFrom,\nSimon','2016-08-15 06:16:59',1,2,0),(64,'12- Hi Balram\n\nFrom,\nSimon','2016-08-15 06:17:01',1,2,0),(65,'13- Hi Balram\n\nFrom,\nSimon','2016-08-15 06:17:04',1,2,0),(66,'14- Hi Balram\n\nFrom,\nSimon','2016-08-15 06:17:07',1,2,0),(67,'15- Hi Balram\n\nFrom,\nSimon','2016-08-15 06:17:10',1,2,0),(68,'16- Hi Balram\n\nFrom,\nSimon','2016-08-15 06:17:13',1,2,0),(69,'17- Hi Balram\n\nFrom,\nSimon','2016-08-15 06:17:18',1,2,0),(70,'18- Hi Balram\n\nFrom,\nSimon','2016-08-15 06:17:21',1,2,0),(71,'19- Hi Balram\n\nFrom,\nSimon','2016-08-15 06:17:24',1,2,0),(72,'20- Hi Balram\n\nFrom,\nSimon','2016-08-15 06:17:27',1,2,0),(73,'test-1','2016-08-15 06:28:35',2,1,0),(74,'test-2','2016-08-15 06:31:17',2,1,0),(75,'test-3','2016-08-15 06:41:59',2,1,0);
+INSERT INTO `messages` VALUES (81,'01234567890123456789012345678901234567890123456789','checking length','2016-08-15 13:58:10',2,1,1);
 /*!40000 ALTER TABLE `messages` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -169,16 +170,18 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-CREATE DEFINER=`root`@`localhost` PROCEDURE `createNewMessage`(_messageText VARCHAR(800), _sentOn DATETIME, _fromUserId int,_toUserId int, _isRead boolean)
+CREATE DEFINER=`root`@`localhost` PROCEDURE `createNewMessage`(_subject varchar(50), _messageText VARCHAR(800), _sentOn DATETIME, _fromUserId int,_toUserId int, _isRead boolean)
 BEGIN
 	INSERT INTO `daily-work-logger-db`.`messages`
-		(		`messageText`,
+		(`subject`,
+        `messageText`,
 		`sentOn`,
 		`fromUserId`,
 		`toUserId`,
 		`isRead`)
 		VALUES
-		(_messageText,
+		(_subject,
+        _messageText,
 		_sentOn,
 		_fromUserId,
 		_toUserId,
@@ -201,12 +204,13 @@ DELIMITER ;
 DELIMITER ;;
 CREATE DEFINER=`root`@`localhost` PROCEDURE `getAllReceivedMessages`(userId int)
 BEGIN
-	SELECT m.Id, m.messageText, uu.UserName 'From', m.sentOn, m.isRead FROM `daily-work-logger-db`.messages m
+	SELECT m.Id, m.subject 'subject', m.messageText, uu.UserName 'From', m.sentOn, m.isRead FROM `daily-work-logger-db`.messages m
 	left outer join `daily-work-logger-db`.users u
 	on m.toUserId = u.Id
 	left outer join `daily-work-logger-db`.users uu
 	on m.fromUserId = uu.Id
-	where u.Id = userId;
+	where u.Id = userId
+    order by m.sentOn desc;
 END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -225,10 +229,11 @@ DELIMITER ;
 DELIMITER ;;
 CREATE DEFINER=`root`@`localhost` PROCEDURE `getAllSentMessages`(userId int)
 BEGIN
-	SELECT m.Id, m.messageText, u.UserName 'To', m.sentOn FROM `daily-work-logger-db`.messages m
+	SELECT m.Id, m.subject 'subject', m.messageText, u.UserName 'To', m.sentOn FROM `daily-work-logger-db`.messages m
 	left outer join `daily-work-logger-db`.users u
 	on m.toUserId = u.Id
-	where m.fromUserId = userId;
+	where m.fromUserId = userId
+    order by m.sentOn desc;
 END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -266,4 +271,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2016-08-15 14:38:32
+-- Dump completed on 2016-08-15 19:32:46

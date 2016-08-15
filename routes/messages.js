@@ -42,7 +42,7 @@ router.post('/newMessage', function (req, res) {
 
     var sentOn = moment(newMessage.sentOn, 'YYYY/MM/DD HH:mm:ss').format('YYYY-MM-DD HH:mm:ss');
 
-    var query = util.format('CALL `daily-work-logger-db`.`createNewMessage`(\'%s\',\'%s\',%d,%d,%d);', newMessage.messageText,
+    var query = util.format('CALL `daily-work-logger-db`.`createNewMessage`(\'%s\',\'%s\',\'%s\',%d,%d,%d);',newMessage.subject, newMessage.messageText,
         sentOn, newMessage.fromUserId, newMessage.toUserId, newMessage.isRead);
 
     console.log("query: ", query);
