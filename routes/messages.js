@@ -13,10 +13,19 @@ var connection = mysql.createConnection({
 /*
  * GET userlist.
  */
-router.get('/all', function (req, res) {
-    // var users  = [{id:1, name:'simon'}, {id:2,name:'balram'}];
-    // res.send(users);
-    var query = "CALL `daily-work-logger-db`.`getAllReceivedMessages`(1);"
+router.get('/received/:userId', function (req, res) {
+    var userId = req.params.userId;
+    var query = "CALL `daily-work-logger-db`.`getAllReceivedMessages`(" + userId + ");"
+    connection.query(query, function (err, rows) {
+        console.log('result: ', rows[0]);
+        res.send(rows[0]);
+        if (err) throw err;
+    });
+});
+
+router.get('/sent/:userId', function (req, res) {
+    var userId = req.params.userId;
+    var query = "CALL `daily-work-logger-db`.`getAllSentMessages`(" + userId + ");"
     connection.query(query, function (err, rows) {
         console.log('result: ', rows[0]);
         res.send(rows[0]);
