@@ -59,6 +59,26 @@ router.post('/newMessage', function (req, res) {
     });
 });
 
+router.post('/markRead', function (req, res) {
+    var messageDetails = req.body;
+    console.log(messageDetails);
+
+    var query = util.format('CALL `daily-work-logger-db`.`setMessageReadStatus`(%d,%d);',messageDetails.messageId, true);
+
+    console.log("query: ", query);
+
+    connection.query(query, function (err, rows) {
+        console.log('result: ', rows);
+        if (rows) {
+            res.send({ messageSent: true });
+        }
+        else {
+            res.send({ messageSent: false });
+        }
+        if (err) throw err;
+    });
+});
+
 // /*
 //  * DELETE to deleteuser.
 //  */
