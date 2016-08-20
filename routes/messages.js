@@ -23,6 +23,16 @@ router.get('/received/:userId', function (req, res) {
     });
 });
 
+router.get('/messageThread/:messageId', function (req, res) {
+    var messageId = req.params.messageId;
+    var query = "CALL `daily-work-logger-db`.`getMessageThread`(" + messageId + ");"
+    connection.query(query, function (err, rows) {
+        console.log('result: ', rows[0]);
+        res.send(rows[0]);
+        if (err) throw err;
+    });
+});
+
 router.get('/sent/:userId', function (req, res) {
     var userId = req.params.userId;
     var query = "CALL `daily-work-logger-db`.`getAllSentMessages`(" + userId + ");"
@@ -42,8 +52,34 @@ router.post('/newMessage', function (req, res) {
 
     var sentOn = moment(newMessage.sentOn, 'YYYY/MM/DD HH:mm:ss').format('YYYY-MM-DD HH:mm:ss');
 
-    var query = util.format('CALL `daily-work-logger-db`.`createNewMessage`(\'%s\',\'%s\',\'%s\',%d,%d,%d);',newMessage.subject, newMessage.messageText,
+    var query = util.format('CALL `daily-work-logger-db`.`createNewMessage`(\'%s\',\'%s\',\'%s\',%d,%d,%d);', newMessage.subject, newMessage.messageText,
         sentOn, newMessage.fromUserId, newMessage.toUserId, newMessage.isRead);
+
+    console.log("query: ", query);
+
+    connection.query(query, function (err, rows) {
+        console.log('result: ', rows);
+        if (rows) {
+            res.send({ messageSent: true });
+        }
+        else {
+            res.send({ messageSent: false });
+        }
+        if (err) throw err;
+    });
+});
+
+
+/*
+ * POST to adduser.
+ */
+router.post('/reply', function (req, res) {
+    var replyMessage = req.body;
+    console.log(replyMessage);
+
+    var sentOn = moment(replyMessage.sentOn, 'YYYY/MM/DD HH:mm:ss').format('YYYY-MM-DD HH:mm:ss');
+
+    var query = util.format('CALL `daily-work-logger-db`.`replyMessage`(\'%s\',\'%s\',%d);', replyMessage.messageText, sentOn, replyMessage.Id);
 
     console.log("query: ", query);
 
@@ -63,7 +99,7 @@ router.post('/markRead', function (req, res) {
     var messageDetails = req.body;
     console.log(messageDetails);
 
-    var query = util.format('CALL `daily-work-logger-db`.`setMessageReadStatus`(%d,%d);',messageDetails.messageId, true);
+    var query = util.format('CALL `daily-work-logger-db`.`setMessageReadStatus`(%d,%d);', messageDetails.messageId, true);
 
     console.log("query: ", query);
 

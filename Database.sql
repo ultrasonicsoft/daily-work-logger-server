@@ -60,8 +60,9 @@ CREATE TABLE `messages` (
   `fromUserId` int(11) DEFAULT NULL,
   `toUserId` int(11) DEFAULT NULL,
   `isRead` tinyint(4) DEFAULT NULL,
+  `parentMessageId` int(11) DEFAULT NULL,
   PRIMARY KEY (`Id`)
-) ENGINE=InnoDB AUTO_INCREMENT=82 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -70,7 +71,7 @@ CREATE TABLE `messages` (
 
 LOCK TABLES `messages` WRITE;
 /*!40000 ALTER TABLE `messages` DISABLE KEYS */;
-INSERT INTO `messages` VALUES (81,'01234567890123456789012345678901234567890123456789','checking length','2016-08-15 13:58:10',2,1,1);
+INSERT INTO `messages` VALUES (6,'Reply test','message from Balram','2016-08-20 03:56:12',2,1,1,6),(7,'other message','other message body','2016-08-20 03:56:41',2,1,0,7),(9,'Reply test','reply by Simon','2016-08-20 03:58:12',1,2,0,6),(10,'Reply test','reply of reply by Balram','2016-08-20 05:12:12',2,1,0,6),(11,'Reply test','reply of reply of reply by Simon','2016-08-20 06:23:12',1,2,0,6);
 /*!40000 ALTER TABLE `messages` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -204,13 +205,28 @@ DELIMITER ;
 DELIMITER ;;
 CREATE DEFINER=`root`@`localhost` PROCEDURE `getAllReceivedMessages`(userId int)
 BEGIN
-	SELECT m.Id, m.subject 'subject', m.messageText, uu.UserName 'From', m.sentOn, m.isRead FROM `daily-work-logger-db`.messages m
+	/*SELECT m.Id, m.subject 'subject', m.messageText, uu.UserName 'From', m.sentOn, m.isRead FROM `daily-work-logger-db`.messages m
 	left outer join `daily-work-logger-db`.users u
 	on m.toUserId = u.Id
 	left outer join `daily-work-logger-db`.users uu
 	on m.fromUserId = uu.Id
 	where u.Id = userId
-    order by m.sentOn desc;
+    order by m.sentOn desc;*/
+    
+    SELECT
+    Id,
+    (CASE count(*)
+	WHEN 1 THEN `subject`
+    ELSE Concat(`subject`,' (', count(*),')')
+    END) AS `subject`,
+    `messageText`,
+    sentOn,
+    (CASE 
+		WHEN fromUserId<>toUserId THEN (SELECT u.UserName FROM users u where u.Id = fromUserId)
+    END) as `From`
+	FROM messages
+	WHERE fromUserId = userId OR toUserId = userId
+	GROUP BY parentMessageId;
 END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -234,6 +250,61 @@ BEGIN
 	on m.toUserId = u.Id
 	where m.fromUserId = userId
     order by m.sentOn desc;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `getMessageThread` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8 */ ;
+/*!50003 SET character_set_results = utf8 */ ;
+/*!50003 SET collation_connection  = utf8_general_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `getMessageThread`(messageId int)
+BEGIN
+	SELECT `id`,
+	`subject`,
+    `messageText`,
+    `sentOn`,
+    (CASE
+	WHEN fromUserId <> toUserId THEN (SELECT u.UserName FROM users u WHERE u.Id = fromUserId)
+    END) AS 'From'
+    FROM messages
+    WHERE parentMessageId = messageId;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `replyMessage` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8 */ ;
+/*!50003 SET character_set_results = utf8 */ ;
+/*!50003 SET collation_connection  = utf8_general_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `replyMessage`(_messageText VARCHAR(800), _sentOn DATETIME, _parentMessageId int)
+BEGIN
+	INSERT INTO `daily-work-logger-db`.`messages`
+		(`messageText`,
+		`sentOn`,		
+		`isRead`,
+        `parentMessageId`)
+		VALUES
+		(_messageText,
+		_sentOn,
+        false,
+        _parentMessageId);
 END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -271,4 +342,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2016-08-15 19:32:46
+-- Dump completed on 2016-08-20 11:00:30
