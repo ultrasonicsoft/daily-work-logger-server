@@ -62,7 +62,7 @@ CREATE TABLE `messages` (
   `isRead` tinyint(4) DEFAULT NULL,
   `parentMessageId` int(11) DEFAULT NULL,
   PRIMARY KEY (`Id`)
-) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=46 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -71,7 +71,7 @@ CREATE TABLE `messages` (
 
 LOCK TABLES `messages` WRITE;
 /*!40000 ALTER TABLE `messages` DISABLE KEYS */;
-INSERT INTO `messages` VALUES (6,'Reply test','message from Balram','2016-08-20 03:56:12',2,1,1,6),(7,'other message','other message body','2016-08-20 03:56:41',2,1,0,7),(9,'Reply test','reply by Simon','2016-08-20 03:58:12',1,2,0,6),(10,'Reply test','reply of reply by Balram','2016-08-20 05:12:12',2,1,0,6),(11,'Reply test','reply of reply of reply by Simon','2016-08-20 06:23:12',1,2,0,6);
+INSERT INTO `messages` VALUES (40,'test','message 1','2016-08-20 06:35:45',2,1,1,40),(41,NULL,'reply 1','2016-08-20 06:35:59',1,2,0,40),(42,NULL,'follow up message','2016-08-20 06:36:11',1,2,0,40),(43,NULL,'sorry for late reply. here is the reply','2016-08-20 06:36:36',2,1,0,40),(44,NULL,'follow up by balram','2016-08-20 06:36:52',2,1,0,40),(45,NULL,'final reply from Simon','2016-08-20 06:37:20',1,2,0,40);
 /*!40000 ALTER TABLE `messages` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -173,6 +173,7 @@ DELIMITER ;
 DELIMITER ;;
 CREATE DEFINER=`root`@`localhost` PROCEDURE `createNewMessage`(_subject varchar(50), _messageText VARCHAR(800), _sentOn DATETIME, _fromUserId int,_toUserId int, _isRead boolean)
 BEGIN
+    
 	INSERT INTO `daily-work-logger-db`.`messages`
 		(`subject`,
         `messageText`,
@@ -187,6 +188,13 @@ BEGIN
 		_fromUserId,
 		_toUserId,
 		_isRead);
+        
+	SELECT @parentMessageId:=max(id) FROM messages;
+    
+	UPDATE messages
+    SET parentMessageId = @parentMessageId
+    where id= @parentMessageId;
+	
 END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -221,6 +229,8 @@ BEGIN
     END) AS `subject`,
     `messageText`,
     sentOn,
+    fromUserId,
+    toUserId,
     (CASE 
 		WHEN fromUserId<>toUserId THEN (SELECT u.UserName FROM users u where u.Id = fromUserId)
     END) as `From`
@@ -293,18 +303,33 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-CREATE DEFINER=`root`@`localhost` PROCEDURE `replyMessage`(_messageText VARCHAR(800), _sentOn DATETIME, _parentMessageId int)
+CREATE DEFINER=`root`@`localhost` PROCEDURE `replyMessage`(_messageText VARCHAR(800), 
+	_sentOn DATETIME, _messageId int, _fromUserId int)
 BEGIN
+
+	SELECT @parentMessageId:=parentMessageId
+    FROM messages
+    WHERE id = _messageId;
+    
+    SELECT @toUserId:=fromuserId
+    FROM messages
+    WHERE parentMessageId = @parentMessageId and toUserId = _fromUserId;
+    
+   
 	INSERT INTO `daily-work-logger-db`.`messages`
 		(`messageText`,
-		`sentOn`,		
+		`sentOn`,
+		`fromUserId`,
+        `toUserId`,
 		`isRead`,
         `parentMessageId`)
 		VALUES
 		(_messageText,
 		_sentOn,
+        _fromUserId,
+        @toUserId,
         false,
-        _parentMessageId);
+        @parentMessageId);
 END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -342,4 +367,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2016-08-20 11:00:30
+-- Dump completed on 2016-08-20 12:08:06

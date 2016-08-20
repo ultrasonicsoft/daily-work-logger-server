@@ -79,7 +79,8 @@ router.post('/reply', function (req, res) {
 
     var sentOn = moment(replyMessage.sentOn, 'YYYY/MM/DD HH:mm:ss').format('YYYY-MM-DD HH:mm:ss');
 
-    var query = util.format('CALL `daily-work-logger-db`.`replyMessage`(\'%s\',\'%s\',%d);', replyMessage.messageText, sentOn, replyMessage.Id);
+    var query = util.format('CALL `daily-work-logger-db`.`replyMessage`(\'%s\',\'%s\',%d, %d);',
+         replyMessage.messageText, sentOn, replyMessage.Id,replyMessage.fromUserId);
 
     console.log("query: ", query);
 
